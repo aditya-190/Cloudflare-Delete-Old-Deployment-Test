@@ -24,7 +24,7 @@ jobs:
             timestamp=$(echo $i | jq -r '.created_on')
             epoch=$(date -u -d $timestamp +%s)
             i=$(echo $i | jq --arg epoch $epoch" '.created_on = $epoch')
-          echo "Aditya -> i"
+          echo "Aditya -> $i"
           done
   
           DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $DATE_AFTER_SUBTRACTING_DAYS '[.result[] | select(.created_on < $DATE)]')
