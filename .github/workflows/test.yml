@@ -26,5 +26,7 @@ jobs:
             if [ "${epochTime}" -lt "${cutoffDate}" ]; then
                 deploymentId=$(echo $obj | jq -r '.id')
                 echo "Deleting deployment $deploymentId"
+                echo "Epoch Time: $epochTime"
+                echo "Cutoff Time: $cutoffDate"
             fi
           done
