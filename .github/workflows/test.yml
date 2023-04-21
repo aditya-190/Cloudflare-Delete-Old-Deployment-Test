@@ -19,5 +19,5 @@ jobs:
           RESPONSE=$(curl -s -X GET $ENDPOINT -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
           CURRENT_DATE=$(date +%s)
           DATE_AFTER_SUBTRACTING_DAYS=$(($CURRENT_DATE - (${{ secrets.EXPIRATION_DAYS }} * 60)))
-          DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $DATE_AFTER_SUBTRACTING_DAYS '[.result[] | select(date -u -d .created_on +%s < $DATE)]')
+          DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $DATE_AFTER_SUBTRACTING_DAYS '[.result[] | select('date -u -d .created_on +%s' < $DATE)]')
           echo "Aditya -> $DEPLOYMENTS"
