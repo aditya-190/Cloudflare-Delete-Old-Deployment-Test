@@ -20,4 +20,4 @@ jobs:
         echo $ENDPOINT
         echo $EXPIRATION_DAYS
         echo $API_TOKEN
-      if: env.ENDPOINT == "https://api.cloudflare.com/client/v4/accounts/2d9cb82cfe4ae00ad39e448b5933a805/pages/projects/cloudflare-delete-old-deployment-test/deployments"
+      if: env.ENDPOINT == 'https://api.cloudflare.com/client/v4/accounts/2d9cb82cfe4ae00ad39e448b5933a805/pages/projects/cloudflare-delete-old-deployment-test/deployments'
