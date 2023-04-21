@@ -21,6 +21,8 @@ jobs:
           DATE_AFTER_SUBTRACTING_DAYS=$(($CURRENT_DATE - (${{ secrets.EXPIRATION_DAYS }} * 60)))
           
           echo $RESPONSE | jq -c '.result[]' | while read i; do
+            timestamp=$(echo $i | jq -r '.created_on')
+            epoch=$(date -u -d $timestamp +%s)
             echo "Aditya -> $i"
           done
   
