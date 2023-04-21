@@ -16,7 +16,7 @@ jobs:
         run: |
           node -e "$(cat <<EOF
           const endpoint = 'https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments';
-          const expirationDays = 7;
+          const expirationDays = 10;
 
           (async () => {
             const init = {
@@ -30,7 +30,7 @@ jobs:
             const deployments = await response.json();
 
             for (const deployment of deployments.result) {
-              if ((Date.now() - new Date(deployment.created_on)) / 86400000 > expirationDays) {
+              if ((Date.now() - new Date(deployment.created_on)) / 60000 > expirationDays) {
                 await fetch(\`\${endpoint}/\${deployment.id}\`, {
                   method: 'DELETE',
                   headers: {
