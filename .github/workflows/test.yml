@@ -22,6 +22,6 @@ jobs:
           FORMATTED_DATE=$(date -u -d @$DATE_AFTER_SUBTRACTING_DAYS +'%Y-%m-%dT%H:%M:%SZ')
           DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $FORMATTED_DATE '[.result[] | select(.created_on < $DATE)]')
           for single in $(echo $DEPLOYMENTS | jq -c '.[]'); do
-            SINGLE_ID=$(echo $single | jq -r '.id')
+            SINGLE_ID=$(echo $single)
             echo "ID -> $SINGLE_ID"
           done
