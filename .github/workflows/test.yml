@@ -17,6 +17,7 @@ jobs:
         API_TOKEN: "Authorization: Bearer '${{ secrets.API_TOKEN }}'"
         EXPIRATION_DAYS: ${{ secrets.EXPIRATION_DAYS }}
       run: |
+        echo $API_TOKEN
         RESPONSE=$(curl -s -w '\n%{http_code}' -X GET $ENDPOINT \
               -H $API_TOKEN)
         STATUS=$(echo $RESPONSE | tail -n1)
