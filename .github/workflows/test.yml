@@ -11,19 +11,15 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Delete old deployments
+
+    - name: Call Cloudflare Pages API
       env:
         ENDPOINT: https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments
-        EXPIRATION_DAYS: ${{ secrets.EXPIRATION_DAYS }}
       run: |
-        echo 'Authorization: Bearer ${{ secrets.API_TOKEN }}'
         RESPONSE=$(curl -s -w '\n%{http_code}' -X GET $ENDPOINT \
               -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
-        STATUS=$(echo $RESPONSE | tail -n1)
-        OUTPUT=$(echo $RESPONSE | sed '$d')
-        if [ $STATUS -eq 200 ]; then
-          echo 'API call successful'
-          echo $OUTPUT
-        else
-          echo $STATUS
-        fi
+        DEPLOYMENTS=$(echo RESPONSE | jq -r '.result[] | select((now - (.created_on | fromdateiso8601) / 86400) > ${{ secrets.EXPIRATION_DAYS }})')
+          while IFS= read -r SINGLE_DEPLOY; do
+            DEPLOY_ID=$(echo SINGLE_DEPLOY | jq -r '.id')
+            curl -X DELETE '$ENDPOINT/DEPLOY_ID' -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}'
+          done <<< 'DEPLOYMENTS'
