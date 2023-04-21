@@ -28,6 +28,8 @@ jobs:
 
             const response = await fetch(endpoint, init);
             const deployments = await response.json();
+            
+            console.log('Aditya ->', deployments)
 
             for (const deployment of deployments.result) {
               if ((Date.now() - new Date(deployment.created_on)) / 60000 > expirationDays) {
