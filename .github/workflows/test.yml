@@ -1,4 +1,4 @@
-name: Cloudflare Pages Deployment Cleaner
+name: Clean Old CloudFlare Pages Deployments
 
 on:
   push:
@@ -18,8 +18,7 @@ jobs:
         run: |
           response=$(curl -s -X GET $ENDPOINT -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
           currentDate=$(date +%s)
-          cutoffDate=$(($currentDate - (${{ secrets.EXPIRATION_DAYS }} * 60)))
-          
+          cutoffDate=$(($currentDate - (${{ secrets.EXPIRATION_DAYS }} * 86400)))
           echo $response | jq -c '.result[]' | while read obj; do
             createdTime=$(echo $obj | jq -r '.created_on')
             epochTime=$(date -u -d $createdTime +%s)            
