@@ -26,7 +26,7 @@ jobs:
           DELETE_RESPONSE=$(curl -X DELETE \
           -H 'Content-Type: application/json;charset=UTF-8' \
           -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}' \
-          $ENDPOINT/$DEPLOY_ID)
-          echo 'Deleted deployment ->  $DEPLOY_ID'
-          echo 'Response ->  $DELETE_RESPONSE'
+          '$ENDPOINT'/'$DEPLOY_ID')
+          echo "Deleted deployment ->  $DEPLOY_ID"
+          echo "Response ->  $DELETE_RESPONSE"
         done
