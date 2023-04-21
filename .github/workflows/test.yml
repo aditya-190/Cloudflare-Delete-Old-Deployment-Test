@@ -20,6 +20,7 @@ jobs:
         CURRENT_DATE=$(date +%s)
         DATE_AFTER_SUBTRACTING_DAYS=$(($CURRENT_DATE - (${{ secrets.EXPIRATION_DAYS }} * 60)))
         FORMATTED_DATE=$(date -u -d @$DATE_AFTER_SUBTRACTING_DAYS +'%Y-%m-%dT%H:%M:%SZ')
-        DEPLOYMENTS=$($RESPONSE | jq -r --arg DATE $FORMATTED_DATE '.result[] | select(.created_on < $DATE)')
+#        DEPLOYMENTS=$($RESPONSE | jq -r --arg DATE $FORMATTED_DATE '.result[] | select(.created_on < $DATE)')
+        DEPLOYMENTS=$($RESPONSE)
         echo "ADITYA -> $DEPLOYMENTS"
 
