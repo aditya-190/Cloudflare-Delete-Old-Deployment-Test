@@ -18,8 +18,8 @@ jobs:
       run: |
         RESPONSE=$(curl -s -w '\n%{http_code}' -X GET $ENDPOINT \
               -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
-        DEPLOYMENTS=$(echo RESPONSE | jq -r '.result[] | select((now - (.created_on | fromdateiso8601) / 86400) > ${{ secrets.EXPIRATION_DAYS }})')
+        echo $RESPONSE | jq -r '.result[]
+        DEPLOYMENTS=$(echo $RESPONSE | jq -r '.result[] | select((now - (.created_on | fromdateiso8601) / 86400) > ${{ secrets.EXPIRATION_DAYS }})')
           while IFS= read -r SINGLE_DEPLOY; do
-            DEPLOY_ID=$(echo SINGLE_DEPLOY | jq -r '.id')
-            curl -X DELETE '$ENDPOINT/DEPLOY_ID' -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}'
-          done <<< 'DEPLOYMENTS'
+            DEPLOY_ID=$(echo $SINGLE_DEPLOY | jq -r '.id')
+            curl -X DELETE '$ENDPOINT/$DEPLOY_ID' -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}'
