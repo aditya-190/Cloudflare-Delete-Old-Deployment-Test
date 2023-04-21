@@ -20,10 +20,8 @@ jobs:
           CURRENT_DATE=$(date +%s)
           DATE_AFTER_SUBTRACTING_DAYS=$(($CURRENT_DATE - (${{ secrets.EXPIRATION_DAYS }} * 60)))
           FORMATTED_DATE=$(date -u -d @$DATE_AFTER_SUBTRACTING_DAYS +'%Y-%m-%dT%H:%M:%SZ')
-          DEPLOYMENTS=$(echo $RESPONSE | jq -r --arg DATE $FORMATTED_DATE '[.result[] | select(.created_on < $DATE)] | @json')
+          DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $FORMATTED_DATE '.result[] | select(.created_on < $DATE)')
           for single in $(echo $DEPLOYMENTS | jq -c '.[]'); do
-            if [ "$(echo $single | jq -c '.')" != "." ]; then
-              id=$(echo $single | jq -r '.id')
-              echo "Deployment ID: $id"
-            fi
+            id=$(echo $single | jq -r '.id')
+            echo "ID -> $id"
           done
