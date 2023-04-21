@@ -38,7 +38,7 @@ jobs:
             for (const deployment of deployments.result) {
               const minutesSinceDeployment = (Date.now() - new Date(deployment.created_on)) / 60000;
               if (minutesSinceDeployment > expirationMinutes) {
-                const deleteEndpoint = `${endpoint}/${deployment.id}`;
+                const deleteEndpoint = `${{ endpoint }}/${{ deployment.id }}`;
                 await fetch(deleteEndpoint, {
                   method: 'DELETE',
                   headers: {
@@ -46,7 +46,7 @@ jobs:
                     'Authorization': `${{ env.API_TOKEN }}`,
                   },
                 });
-                console.log(`Deleted deployment with ID ${deployment.id}`);
+                console.log(`Deleted deployment with ID ${{ deployment.id }}`);
               }
             }
           })().catch(console.error);
