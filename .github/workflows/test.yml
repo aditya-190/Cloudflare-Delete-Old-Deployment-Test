@@ -1,9 +1,9 @@
 name: Delete old Cloudflare Pages deployments
 
 on:
-  schedule:
-    # Run every day at 12:00 AM UTC
-    - cron: '0 0 * * *'
+  push:
+    branches:
+      - main
 
 jobs:
   delete-deployments:
