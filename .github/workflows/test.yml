@@ -13,7 +13,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Delete old deployments
       run: |
-        endpoint="https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments"
+        endpoint="https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments"
         expirationDays=7
         apiToken="${{ secrets.API_TOKEN }}"
         headers=(
