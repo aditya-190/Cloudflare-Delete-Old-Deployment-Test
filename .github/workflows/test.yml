@@ -22,6 +22,6 @@ jobs:
         FORMATTED_DATE=$(date -u -d @$DATE_AFTER_SUBTRACTING_DAYS +'%Y-%m-%dT%H:%M:%SZ')
         DEPLOYMENTS=$(echo $RESPONSE | jq -r --arg DATE $FORMATTED_DATE '.result[] | select(.created_on < $DATE)')
         echo $DEPLOYMENTS | while IFS= read -r SINGLE_DEPLOY; do
-          DEPLOY_ID=$(echo $SINGLE_DEPLOY | jq -r '.id' | tr -d '\n')
-          echo "DELETE -> $ENDPOINT/$DEPLOY_ID"
+          DEPLOY_ID=$(echo $SINGLE_DEPLOY)
+          echo "DELETE -> $DEPLOY_ID"
         done
