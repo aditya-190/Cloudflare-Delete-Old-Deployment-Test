@@ -13,23 +13,27 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run script
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
         run: |
           node -e "$(cat <<EOF
-          const endpoint = 'https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments';
+          const endpoint = 'https://api.cloudflare.com/client/v4/accounts/${{ process.env.ACCOUNT_ID }}/pages/projects/${{ process.env.PROJECT_NAME }}/deployments';
           const expirationDays = 10;
 
           (async () => {
             const init = {
               headers: {
                 'Content-Type': 'application/json;charset=UTF-8',
-                'Authorization': '${{ secrets.API_TOKEN }}',
+                'Authorization': '${{ process.env.API_TOKEN }}',
               },
             };
 
             const response = await fetch(endpoint, init);
             const deployments = await response.json();
             
-            console.log('Aditya ->', deployments, " -> ", '${{ secrets.API_TOKEN }}', '${{ secrets.ACCOUNT_ID }}', '${{ secrets.PROJECT_NAME }}')
+            console.log('Aditya ->', deployments, " -> ", '${{ process.env.API_TOKEN }}', '${{ process.env.ACCOUNT_ID }}', '${{ process.env.PROJECT_NAME }}')
 
             for (const deployment of deployments.result) {
               if ((Date.now() - new Date(deployment.created_on)) / 60000 > expirationDays) {
@@ -37,7 +41,7 @@ jobs:
                   method: 'DELETE',
                   headers: {
                     'Content-Type': 'application/json;charset=UTF-8',
-                    'Authorization': '${{ secrets.API_TOKEN }}',
+                    'Authorization': '${{ process.env.API_TOKEN }}',
                   },
                 });
               }
