@@ -1,4 +1,4 @@
-name: Delete old deployments
+name: Cloudflare Pages Deployment Cleaner
 
 on:
   push:
@@ -6,15 +6,24 @@ on:
       - main
 
 jobs:
-  build:
+  delete-old-deployments:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Install Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16.17.1'
-    - name: Install dependencies
-      run: npm install
-    - name: Run script
-      run: node cloudfare.js
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Delete old deployments
+      run: |
+        endpoint="https://api.cloudflare.com/client/v4/accounts/{account_id}/pages/projects/{project_name}/deployments"
+        expirationDays=7
+        apiToken="${{ secrets.API_TOKEN }}"
+        headers=(
+          "Content-Type: application/json;charset=UTF-8"
+          "Authorization: ${apiToken}"
+        )
+        deployments=$(curl -sSL -H "${headers[0]}" -H "${headers[1]}" "${endpoint}")
+        for deployment in $(echo "${deployments}" | jq -c '.result[]'); do
+          if [[ $(($(date +%s) - $(date -d $(echo "${deployment}" | jq -r '.created_on') +%s))) -gt $((${expirationDays} * 86400)) ]]; then
+            deploymentId=$(echo "${deployment}" | jq -r '.id')
+            curl -sSL -X DELETE -H "${headers[0]}" -H "${headers[1]}" "${endpoint}/${deploymentId}"
+          fi
+        done
