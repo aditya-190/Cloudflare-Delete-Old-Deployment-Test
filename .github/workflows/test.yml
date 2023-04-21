@@ -5,11 +5,6 @@ on:
     branches:
       - main
 
-env:
-    ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-    PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
-    EXPIRATION_DAYS: ${{ secrets.EXPIRATION_DAYS }}
-    API_TOKEN: ${{ secrets.API_TOKEN }}
 jobs:
   delete-old-deployments:
     runs-on: ubuntu-latest
@@ -17,5 +12,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Delete old deployments
+      ENDPOINT: https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments
+      API_TOKEN: ${{ secrets.API_TOKEN }}
+      EXPIRATION_DAYS: ${{ secrets.EXPIRATION_DAYS }}
       run: |
-        echo https://api.cloudflare.com/client/v4/accounts/${{ env.ACCOUNT_ID }}/pages/projects/${{ env.PROJECT_NAME }}/deployments
+        RESPONSE=$(curl -s -w '\n%{http_code}' -X GET $ENDPOINT \
+              -H 'Authorization: Bearer $API_TOKEN')
+        STATUS=$(echo '$RESPONSE' | tail -n1)
+        OUTPUT=$(echo '$RESPONSE' | sed '$d')
+        if [ '$STATUS' -eq 200 ]; then
+          echo 'API call successful'
+          echo '$OUTPUT'
+        else
+          echo 'API call failed with status code: $STATUS'
+        fi
