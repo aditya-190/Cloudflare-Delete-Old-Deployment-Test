@@ -23,5 +23,6 @@ jobs:
           DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $FORMATTED_DATE '[.result[] | select(.created_on < $DATE)]')
           echo $DEPLOYMENTS | jq -c '.[]' | while read i; do
             DEPLOYMENT_ID=$(echo $i | jq -r '.id')
+            echo 'Deleting deployment ->  $DEPLOYMENT_ID'
             curl -s -X DELETE $ENDPOINT/$DEPLOYMENT_ID -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}'
           done
