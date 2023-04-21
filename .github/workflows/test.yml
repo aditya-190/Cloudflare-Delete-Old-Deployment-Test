@@ -18,7 +18,7 @@ jobs:
       run: |
         RESPONSE=$(curl -s -w '\n%{http_code}' -X GET $ENDPOINT \
               -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
-        echo $RESPONSE | jq -r '.result[]'
+        echo $RESPONSE | jq -r '.result[] | select((now - (.created_on | fromdateiso8601) / 86400) > ${{ secrets.EXPIRATION_DAYS }})'
         DEPLOYMENTS=$(echo $RESPONSE | jq -r '.result[] | select((now - (.created_on | fromdateiso8601) / 86400) > ${{ secrets.EXPIRATION_DAYS }})')
           while IFS= read -r SINGLE_DEPLOY; do
             DEPLOY_ID=$(echo $SINGLE_DEPLOY | jq -r '.id')
