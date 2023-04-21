@@ -19,12 +19,5 @@ jobs:
           RESPONSE=$(curl -s -X GET $ENDPOINT -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
           CURRENT_DATE=$(date +%s)
           DATE_AFTER_SUBTRACTING_DAYS=$(($CURRENT_DATE - (${{ secrets.EXPIRATION_DAYS }} * 60)))
-          FORMATTED_DATE=$(date -u -d @$DATE_AFTER_SUBTRACTING_DAYS +'%Y-%m-%dT%H:%M:%SZ')
-          echo "Deleting deployments older than $FORMATTED_DATE"
-          echo "Total Deployments -> $RESPONSE"
-          DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $FORMATTED_DATE '[.result[] | select(.created_on < $DATE)]')
-          echo $DEPLOYMENTS | jq -c '.[]' | while read i; do
-            DEPLOYMENT_ID=$(echo $i | jq -r '.id')
-            echo "Deleting deployment ->  $DEPLOYMENT_ID"
-            curl -s -X DELETE $ENDPOINT/$DEPLOYMENT_ID -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}'
-          done
+          DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $DATE_AFTER_SUBTRACTING_DAYS '[.result[] | select($(date -u -d .created_on +%s) lt $DATE)]')
+          echo "Aditya -> $DEPLOYMENTS"
