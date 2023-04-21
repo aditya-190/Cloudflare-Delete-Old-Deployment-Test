@@ -22,7 +22,7 @@ jobs:
             const init = {
               headers: {
                 'Content-Type': 'application/json;charset=UTF-8',
-                'Authorization': ${{ secrets.API_TOKEN }},
+                'Authorization': '${{ secrets.API_TOKEN }}',
               },
             };
 
@@ -35,7 +35,7 @@ jobs:
                   method: 'DELETE',
                   headers: {
                     'Content-Type': 'application/json;charset=UTF-8',
-                    'Authorization': ${{ secrets.API_TOKEN }},
+                    'Authorization': '${{ secrets.API_TOKEN }}',
                   },
                 });
               }
