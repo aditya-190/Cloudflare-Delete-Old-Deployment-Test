@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+env:
+    ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+    PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
+    EXPIRATION_DAYS: ${{ secrets.EXPIRATION_DAYS }}
+    API_TOKEN: ${{ secrets.API_TOKEN }}
 jobs:
   delete-old-deployments:
     runs-on: ubuntu-latest
@@ -12,12 +17,5 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Delete old deployments
-      env:
-        ENDPOINT: https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments"
-        EXPIRATION_DAYS: ${{ secrets.EXPIRATION_DAYS }}
-        API_TOKEN: ${{ secrets.API_TOKEN }}
       run: |
-        echo $ENDPOINT
-        echo $EXPIRATION_DAYS
-        echo $API_TOKEN
-      if: env.ENDPOINT == 'https://api.cloudflare.com/client/v4/accounts/2d9cb82cfe4ae00ad39e448b5933a805/pages/projects/cloudflare-delete-old-deployment-test/deployments'
+        echo https://api.cloudflare.com/client/v4/accounts/${{ env.ACCOUNT_ID }}/pages/projects/${{ env.PROJECT_NAME }}/deployments
