@@ -9,17 +9,17 @@ jobs:
   delete-old-deployments:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Call Cloudflare Pages API
-      env:
-        ENDPOINT: https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments
-      run: |
-        RESPONSE=$(curl -s -X GET $ENDPOINT -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
-        CURRENT_DATE=$(date +%s)
-        DATE_AFTER_SUBTRACTING_DAYS=$(($CURRENT_DATE - (${{ secrets.EXPIRATION_DAYS }} * 60)))
-        FORMATTED_DATE=$(date -u -d @$DATE_AFTER_SUBTRACTING_DAYS +'%Y-%m-%dT%H:%M:%SZ')
-        DEPLOYMENTS=$(echo $RESPONSE | jq -r '[.result[] | select(.created_on < '$FORMATTED_DATE')] | @json')
-        echo "DEPLOY -> $DEPLOYMENTS"
-        done
+      - name: Call Cloudflare Pages API
+        env:
+          ENDPOINT: https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments
+        run: |
+          RESPONSE=$(curl -s -X GET $ENDPOINT -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
+          CURRENT_DATE=$(date +%s)
+          DATE_AFTER_SUBTRACTING_DAYS=$(($CURRENT_DATE - (${{ secrets.EXPIRATION_DAYS }} * 60)))
+          FORMATTED_DATE=$(date -u -d @$DATE_AFTER_SUBTRACTING_DAYS +'%Y-%m-%dT%H:%M:%SZ')
+          DEPLOYMENTS=$(echo $RESPONSE | jq --arg DATE $FORMATTED_DATE -r '[.result[] | select(.created_on < $DATE)] | @json')
+          echo "DEPLOY -> $DEPLOYMENTS"
+          done
