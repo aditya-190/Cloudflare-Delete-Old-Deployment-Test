@@ -20,4 +20,4 @@ jobs:
         echo $ENDPOINT
         echo $EXPIRATION_DAYS
         echo $API_TOKEN
-      if: env.EXPIRATION_DAYS == '10'
+      if: env.EXPIRATION_DAYS == '100'
