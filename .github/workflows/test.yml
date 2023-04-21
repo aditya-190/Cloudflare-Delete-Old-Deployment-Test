@@ -20,10 +20,11 @@ jobs:
           CURRENT_DATE=$(date +%s)
           DATE_AFTER_SUBTRACTING_DAYS=$(($CURRENT_DATE - (${{ secrets.EXPIRATION_DAYS }} * 60)))
           
-          echo $RESPONSE | jq -c '.result[]' | while read i; do
-            timestamp=$(echo $i | jq -r '.created_on')
+          echo $RESPONSE | jq -c '.result[]' | while read obj; do
+            timestamp=$(echo $obj | jq -r '.created_on')
             epoch=$(date -u -d $timestamp +%s)
-            echo "Aditya -> $i"
+            obj=$(echo "${obj}" | jq --arg epoch "${epoch}" '.created_on = $epoch')
+            echo "Aditya -> $obj"
           done
   
           DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $DATE_AFTER_SUBTRACTING_DAYS '[.result[] | select(.created_on < $DATE)]')
