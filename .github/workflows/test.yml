@@ -24,4 +24,5 @@ jobs:
         echo $DEPLOYMENTS | while IFS= read -r SINGLE_DEPLOY; do
           DEPLOY_ID=$(echo $SINGLE_DEPLOY | jq -r '.id')
           DELETE_REQUEST=$(echo $ENDPOINT/$DEPLOY_ID)
+          echo "DELETE -> $DELETE_REQUEST"
         done
