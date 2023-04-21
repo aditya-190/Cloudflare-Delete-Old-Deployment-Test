@@ -25,5 +25,5 @@ jobs:
           echo 'API call successful'
           echo '$OUTPUT'
         else
-          echo 'API call failed with status code: $STATUS'
+          echo $STATUS
         fi
