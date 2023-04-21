@@ -18,14 +18,14 @@ jobs:
           ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
           PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
         run: |
-          const endpoint = `https://api.cloudflare.com/client/v4/accounts/${process.env.ACCOUNT_ID}/pages/projects/${process.env.PROJECT_NAME}/deployments`;
+          const endpoint = `https://api.cloudflare.com/client/v4/accounts/${{ process.env.ACCOUNT_ID }}/pages/projects/${{ process.env.PROJECT_NAME }}/deployments';
           const expirationMinutes = 10;
           
           (async () => {
             const init = {
               headers: {
                 'Content-Type': 'application/json;charset=UTF-8',
-                'Authorization': `${process.env.API_TOKEN}`,
+                'Authorization': `${{ process.env.API_TOKEN }}`,
               },
             };
 
@@ -42,7 +42,7 @@ jobs:
                   method: 'DELETE',
                   headers: {
                     'Content-Type': 'application/json;charset=UTF-8',
-                    'Authorization': `${process.env.API_TOKEN}`,
+                    'Authorization': `${{ process.env.API_TOKEN }}`,
                   },
                 });
                 console.log(`Deleted deployment with ID ${deployment.id}`);
