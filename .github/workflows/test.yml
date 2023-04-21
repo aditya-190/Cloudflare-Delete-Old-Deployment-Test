@@ -18,7 +18,6 @@ jobs:
           ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
           PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
         run: |
-          const fetch = require('node-fetch');
           const endpoint = `https://api.cloudflare.com/client/v4/accounts/${process.env.ACCOUNT_ID}/pages/projects/${process.env.PROJECT_NAME}/deployments`;
           const expirationMinutes = 10;
           
