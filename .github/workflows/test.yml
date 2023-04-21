@@ -14,11 +14,11 @@ jobs:
     - name: Delete old deployments
       env:
         ENDPOINT: https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments
-        API_TOKEN: ${{ secrets.API_TOKEN }}
+        API_TOKEN: "Authorization: Bearer '${{ secrets.API_TOKEN }}'"
         EXPIRATION_DAYS: ${{ secrets.EXPIRATION_DAYS }}
       run: |
         RESPONSE=$(curl -s -w '\n%{http_code}' -X GET $ENDPOINT \
-              -H 'Authorization: Bearer $API_TOKEN')
+              -H $API_TOKEN
         STATUS=$(echo $RESPONSE | tail -n1)
         OUTPUT=$(echo $RESPONSE | sed '$d')
         if [ $STATUS -eq 200 ]; then
