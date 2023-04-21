@@ -23,10 +23,5 @@ jobs:
         DEPLOYMENTS=$(echo $RESPONSE | jq -r --arg DATE $FORMATTED_DATE '.result[] | select(.created_on < $DATE)')
         echo $DEPLOYMENTS | while IFS= read -r SINGLE_DEPLOY; do
           DEPLOY_ID=$(echo $SINGLE_DEPLOY | jq -r '.id')
-          DELETE_RESPONSE=$(curl -X DELETE \
-          -H 'Content-Type: application/json;charset=UTF-8' \
-          -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}' \
-          '$ENDPOINT'/'$DEPLOY_ID')
-          echo "Deleted deployment ->  $DEPLOY_ID"
-          echo "Response ->  $DELETE_RESPONSE"
+          DELETE_REQUEST=$(echo $ENDPOINT/$DEPLOY_ID)
         done
