@@ -22,6 +22,8 @@ jobs:
           FORMATTED_DATE=$(date -u -d @$DATE_AFTER_SUBTRACTING_DAYS +'%Y-%m-%dT%H:%M:%SZ')
           DEPLOYMENTS=$(echo $RESPONSE | jq -r --arg DATE $FORMATTED_DATE '[.result[] | select(.created_on < $DATE)] | @json')
           for single in $(echo $DEPLOYMENTS | jq -c '.[]'); do
-            id=$(echo $single | jq -r '.id')
-            echo "Deployment ID: $id"
+            if [ "$(echo $single | jq -c '.')" != "." ]; then
+              id=$(echo $single | jq -r '.id')
+              echo "Deployment ID: $id"
+            fi
           done
