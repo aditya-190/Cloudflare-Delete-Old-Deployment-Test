@@ -18,12 +18,12 @@ jobs:
         EXPIRATION_DAYS: ${{ secrets.EXPIRATION_DAYS }}
       run: |
         RESPONSE=$(curl -s -w '\n%{http_code}' -X GET $ENDPOINT \
-              -H 'Authorization: Bearer $API_TOKEN')
-        STATUS=$(echo '$RESPONSE' | tail -n1)
-        OUTPUT=$(echo '$RESPONSE' | sed '$d')
-        if [ '$STATUS' -eq 200 ]; then
+              -H Authorization: Bearer $API_TOKEN)
+        STATUS=$(echo $RESPONSE | tail -n1)
+        OUTPUT=$(echo $RESPONSE | sed '$d')
+        if [ $STATUS -eq 200 ]; then
           echo 'API call successful'
-          echo '$OUTPUT'
+          echo $OUTPUT
         else
           echo $STATUS
         fi
