@@ -16,16 +16,15 @@ jobs:
         env:
           ENDPOINT: https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments
         run: |
-          RESPONSE=$(curl -s -X GET $ENDPOINT -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
-          CURRENT_DATE=$(date +%s)
-          DATE_AFTER_SUBTRACTING_DAYS=$(($CURRENT_DATE - (${{ secrets.EXPIRATION_DAYS }} * 60)))
+          response=$(curl -s -X GET $ENDPOINT -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
+          currentDate=$(date +%s)
+          cutoffDate=$(($currentDate - (${{ secrets.EXPIRATION_DAYS }} * 60)))
           
-          echo $RESPONSE | jq -c '.result[]' | while read obj; do
-            timestamp=$(echo $obj | jq -r '.created_on')
-            epoch=$(date -u -d $timestamp +%s)
-            obj=$(echo "${obj}" | jq --arg epoch "${epoch}" '.created_on = $epoch')
-            echo "Aditya -> $obj"
+          echo $response | jq -c '.result[]' | while read obj; do
+            createdTime=$(echo $obj | jq -r '.created_on')
+            epochTime=$(date -u -d $createdTime +%s)
+            if [ "${epochTime}" -lt "${cutoffDate}" ]; then
+                deploymentId=$(echo $obj | jq -r '.id')
+                echo "Deleting deployment $deploymentId"
+            fi
           done
-  
-          DEPLOYMENTS=$(echo $RESPONSE | jq -c --arg DATE $DATE_AFTER_SUBTRACTING_DAYS '[.result[] | select(.created_on < $DATE)]')
-          echo "Aditya -> $DEPLOYMENTS"
