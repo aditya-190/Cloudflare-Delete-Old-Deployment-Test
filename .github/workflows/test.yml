@@ -17,4 +17,11 @@ jobs:
         ENDPOINT: https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments
       run: |
         RESPONSE=$(curl -s -w '\n%{http_code}' -X GET $ENDPOINT -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
-        echo '$RESPONSE'
+        CURRENT_DATE=$(date +%s)
+        DATE_AFTER_ADDING_DAYS=$(('$CURRENT_DATE' + ('${{ secrets.EXPIRATION_DAYS }}' * 86400)))
+        FORMATTED_DATE=$(date -u -d '${DATE_AFTER_ADDING_DAYS}' +'%Y-%m-%dT%H:%M:%SZ')
+        DEPLOYMENTS=$(echo '$RESPONSE' | jq --arg exp_date '$FORMATTED_DATE' -r '.result[] | select(.created_on < $exp_date)')
+        while IFS= read -r SINGLE_DEPLOY; do
+          DEPLOY_ID=$(echo $SINGLE_DEPLOY | jq -r '.id')
+          curl -X DELETE '$ENDPOINT/$DEPLOY_ID' -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}'
+        done <<< '$DEPLOYMENTS'
