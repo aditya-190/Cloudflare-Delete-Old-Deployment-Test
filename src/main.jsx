@@ -2,5 +2,5 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <div className="app">Test 2</div>
+    <div className="app">Test 3</div>
 )

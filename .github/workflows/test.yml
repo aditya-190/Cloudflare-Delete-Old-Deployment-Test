@@ -1,4 +1,4 @@
-name: Delete old Cloudflare Pages deployments
+name: Delete old Cloudflare deployments
 
 on:
   push:
@@ -6,30 +6,40 @@ on:
       - main
 
 jobs:
-  delete-deployments:
+  delete_deployments:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Cloudflare CLI
-        run: curl -sL https://github.com/cloudflare/cloudflare-go/releases/latest/download/cloudflare-linux-amd64.tgz | sudo tar xzv -C /usr/local/bin cloudflare
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Get list of deployments
-        id: deployments
+      - name: Run script
         run: |
-          cf_api_token="${{ secrets.CF_API_TOKEN }}"
-          cf_account_id="${{ secrets.CF_ACCOUNT_ID }}"
-          page_name="<Your Cloudflare Pages site name>"
-          deployments=$(cloudflare pages deployments list --account-id $cf_account_id --site $page_name --json)
-          echo "::set-output name=deployments::$deployments"
+          node -e "$(cat <<EOF
+          const endpoint = 'https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments';
+          const expirationDays = 7;
 
-      - name: Delete old deployments
-        if: ${{ steps.deployments.outputs.deployments != "[]" }}
-        run: |
-          deployments=${{ steps.deployments.outputs.deployments }}
-          now=$(date +%s)
-          two_days_ago=$((now - 172800))
-          deleted=0
-          for id in $(echo $deployments | jq -r '.[] | select(.created_at < '$two_days_ago' and .state != "active") | .id'); do
-            cloudflare pages deployments delete --account-id $cf_account_id --site $page_name --id $id
-            deleted=$((deleted + 1))
-          done
-          echo "Deleted $deleted deployments"
+          (async () => {
+            const init = {
+              headers: {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Authorization': ${{ secrets.API_TOKEN }},
+              },
+            };
+
+            const response = await fetch(endpoint, init);
+            const deployments = await response.json();
+
+            for (const deployment of deployments.result) {
+              if ((Date.now() - new Date(deployment.created_on)) / 86400000 > expirationDays) {
+                await fetch(\`\${endpoint}/\${deployment.id}\`, {
+                  method: 'DELETE',
+                  headers: {
+                    'Content-Type': 'application/json;charset=UTF-8',
+                    'Authorization': ${{ secrets.API_TOKEN }},
+                  },
+                });
+              }
+            }
+          })().catch(console.error);
+          EOF
+          )"
