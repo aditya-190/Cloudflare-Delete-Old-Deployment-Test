@@ -1,0 +1,35 @@
+name: Delete old Cloudflare Pages deployments
+
+on:
+  schedule:
+    # Run every day at 12:00 AM UTC
+    - cron: '0 0 * * *'
+
+jobs:
+  delete-deployments:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Cloudflare CLI
+        run: curl -sL https://github.com/cloudflare/cloudflare-go/releases/latest/download/cloudflare-linux-amd64.tgz | sudo tar xzv -C /usr/local/bin cloudflare
+
+      - name: Get list of deployments
+        id: deployments
+        run: |
+          cf_api_token="${{ secrets.CF_API_TOKEN }}"
+          cf_account_id="${{ secrets.CF_ACCOUNT_ID }}"
+          page_name="<Your Cloudflare Pages site name>"
+          deployments=$(cloudflare pages deployments list --account-id $cf_account_id --site $page_name --json)
+          echo "::set-output name=deployments::$deployments"
+
+      - name: Delete old deployments
+        if: ${{ steps.deployments.outputs.deployments != "[]" }}
+        run: |
+          deployments=${{ steps.deployments.outputs.deployments }}
+          now=$(date +%s)
+          two_days_ago=$((now - 172800))
+          deleted=0
+          for id in $(echo $deployments | jq -r '.[] | select(.created_at < '$two_days_ago' and .state != "active") | .id'); do
+            cloudflare pages deployments delete --account-id $cf_account_id --site $page_name --id $id
+            deleted=$((deleted + 1))
+          done
+          echo "Deleted $deleted deployments"
