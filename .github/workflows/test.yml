@@ -18,34 +18,35 @@ jobs:
           ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
           PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
         run: |
-          node -e "$(cat <<EOF
-          const endpoint = 'https://api.cloudflare.com/client/v4/accounts/${{ process.env.ACCOUNT_ID }}/pages/projects/${{ process.env.PROJECT_NAME }}/deployments';
-          const expirationDays = 10;
-
+          const fetch = require('node-fetch');
+          const endpoint = `https://api.cloudflare.com/client/v4/accounts/${process.env.ACCOUNT_ID}/pages/projects/${process.env.PROJECT_NAME}/deployments`;
+          const expirationMinutes = 10;
+          
           (async () => {
             const init = {
               headers: {
                 'Content-Type': 'application/json;charset=UTF-8',
-                'Authorization': '${{ process.env.API_TOKEN }}',
+                'Authorization': `${process.env.API_TOKEN}`,
               },
             };
 
             const response = await fetch(endpoint, init);
             const deployments = await response.json();
-            
-            console.log('Aditya ->', deployments, " -> ", '${{ process.env.API_TOKEN }}', '${{ process.env.ACCOUNT_ID }}', '${{ process.env.PROJECT_NAME }}')
+
+            console.log('Deployments:', deployments);
 
             for (const deployment of deployments.result) {
-              if ((Date.now() - new Date(deployment.created_on)) / 60000 > expirationDays) {
-                await fetch(\`\${endpoint}/\${deployment.id}\`, {
+              const minutesSinceDeployment = (Date.now() - new Date(deployment.created_on)) / 60000;
+              if (minutesSinceDeployment > expirationMinutes) {
+                const deleteEndpoint = `${endpoint}/${deployment.id}`;
+                await fetch(deleteEndpoint, {
                   method: 'DELETE',
                   headers: {
                     'Content-Type': 'application/json;charset=UTF-8',
-                    'Authorization': '${{ process.env.API_TOKEN }}',
+                    'Authorization': `${process.env.API_TOKEN}`,
                   },
                 });
+                console.log(`Deleted deployment with ID ${deployment.id}`);
               }
             }
           })().catch(console.error);
-          EOF
-          )"
