@@ -18,7 +18,7 @@ jobs:
           ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
           PROJECT_NAME: ${{ secrets.PROJECT_NAME }}
         run: |
-          const endpoint = `https://api.cloudflare.com/client/v4/accounts/${{ env.ACCOUNT_ID }}/pages/projects/${{ env.PROJECT_NAME }}/deployments';
+          const endpoint = `https://api.cloudflare.com/client/v4/accounts/${{ env.ACCOUNT_ID }}/pages/projects/${{ env.PROJECT_NAME }}/deployments`;
           const expirationMinutes = 10;
           
           (async () => {
