@@ -6,6 +6,7 @@ on:
       manual_trigger:
         description: 'Trigger the workflow manually'
         default: 'true'
+
 jobs:
   delete-old-deployments:
     runs-on: ubuntu-latest
@@ -19,6 +20,7 @@ jobs:
           ACCOUNT_ID=${{ secrets.ACCOUNT_ID }}
           PROJECT_NAME=${{ secrets.PROJECT_NAME }}
           API_TOKEN=${{ secrets.API_TOKEN }}
+          EXPIRATION_DAYS=${{ secrets.EXPIRATION_DAYS }}
 
           # Set endpoint to get all deployments.
           ENDPOINT="https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$PROJECT_NAME/deployments"
@@ -27,9 +29,9 @@ jobs:
           response=$(curl -s -X GET "$ENDPOINT" -H "Authorization: Bearer $API_TOKEN")
 
           # Get cutoff date.
-          cutoffDate=$(( $(date +%s) - (10 * 60) ))
+          cutoffDate=$(( $(date +%s) - (EXPIRATION_DAYS * 86400) ))
 
-          # Loop through deployments and delete if older than 10 days and has a non-empty alias.
+          # Loop through deployments and delete if older than cutoff-days and has a non-empty alias.
           echo "$response" | jq -c '.result[]' | while read -r obj; do
 
             # Get deployment time.
@@ -37,8 +39,8 @@ jobs:
 
             # Get deployment alias [Will be null if not latest deployment].
             currentDeploymentAlias=$(echo "$obj" | jq -r '.aliases[0]')
-
-            # Check if deployment is older than 10 days and has a non-empty alias.
+          
+            # Check if deployment is older than cutoff-days and has an empty alias.
             if [ "$currentDeploymentTime" -lt "$cutoffDate" ] && [ "$currentDeploymentAlias" == "null" ]; then
               deploymentId=$(echo "$obj" | jq -r '.id')
               echo "ID: $deploymentId"
