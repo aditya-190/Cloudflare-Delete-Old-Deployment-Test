@@ -25,6 +25,6 @@ jobs:
             epochTime=$(date -u -d $createdTime +%s)            
             if [ "${epochTime}" -lt "${cutoffDate}" ]; then
                 deploymentId=$(echo $obj | jq -r '.id')
-                curl -s -X DELETE $ENDPOINT/$deploymentId -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}'
+                echo "Deployment -> $obj"
             fi
           done
