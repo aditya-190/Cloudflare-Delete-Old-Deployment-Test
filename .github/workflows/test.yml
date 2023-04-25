@@ -23,29 +23,29 @@ jobs:
           EXPIRATION_DAYS=${{ secrets.EXPIRATION_DAYS }}
 
           # Set endpoint to get all deployments.
-          ENDPOINT='https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$PROJECT_NAME/deployments'
+          ENDPOINT="https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$PROJECT_NAME/deployments"
 
           # Get all deployments.
-          response=$(curl -s -X GET '$ENDPOINT' -H 'Authorization: Bearer $API_TOKEN')
+          response=$(curl -s -X GET "$ENDPOINT" -H "Authorization: Bearer $API_TOKEN")
 
           # Get cutoff date.
-          cutoffDate=$(( $(date +%s) - (EXPIRATION_DAYS * 86400) ))
+          cutoffDate=$(( $(date +%s) - (EXPIRATION_DAYS * 60) ))
 
           # Loop through deployments and delete if older than cutoff-days and has a non-empty alias.
-          echo '$response' | jq -c '.result[]' | while read -r obj; do
+          echo "$response" | jq -c '.result[]' | while read -r obj; do
 
             # Get deployment time.
-            currentDeploymentTime=$(date -u -d '$(echo '$obj' | jq -r '.created_on')' +%s)
+            currentDeploymentTime=$(date -u -d "$(echo "$obj" | jq -r '.created_on')" +%s)
 
             # Get deployment alias [Will be null if not latest deployment].
-            currentDeploymentAlias=$(echo '$obj' | jq -r '.aliases[0]')
+            currentDeploymentAlias=$(echo "$obj" | jq -r '.aliases[0]')
           
             # Check if deployment is older than cutoff-days and has an empty alias.
-            if [ '$currentDeploymentTime' -lt '$cutoffDate' ] && [ '$currentDeploymentAlias' == 'null' ]; then
-              deploymentId=$(echo '$obj' | jq -r '.id')
+            if [ "$currentDeploymentTime" -lt "$cutoffDate" ] && [ "$currentDeploymentAlias" == "null" ]; then
+              deploymentId=$(echo "$obj" | jq -r '.id')
               echo "ID: $deploymentId"
 
               # Uncomment the below line to delete the deployment.
-              # curl -s -X DELETE $ENDPOINT/'$deploymentId' -H 'Authorization: Bearer $API_TOKEN'
+              # curl -s -X DELETE $ENDPOINT/"$deploymentId" -H "Authorization: Bearer $API_TOKEN"
             fi
           done
