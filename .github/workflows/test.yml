@@ -1,10 +1,11 @@
 name: Clean Old CloudFlare Pages Deployments
 
 on:
-  push:
-    branches:
-      - main
-
+  workflow_dispatch:
+    inputs:
+      manual_trigger:
+        description: 'Trigger the workflow manually'
+        default: 'true'
 jobs:
   delete-old-deployments:
     runs-on: ubuntu-latest
