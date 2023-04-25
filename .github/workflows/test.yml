@@ -14,17 +14,36 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Call Cloudflare Pages API
-        env:
-          ENDPOINT: https://api.cloudflare.com/client/v4/accounts/${{ secrets.ACCOUNT_ID }}/pages/projects/${{ secrets.PROJECT_NAME }}/deployments
         run: |
-          response=$(curl -s -X GET $ENDPOINT -H 'Authorization: Bearer ${{ secrets.API_TOKEN }}')
-          currentDate=$(date +%s)
-          cutoffDate=$(($currentDate - (${{ secrets.EXPIRATION_DAYS }} * 60)))
-          echo $response | jq -c '.result[]' | while read obj; do
-            createdTime=$(echo $obj | jq -r '.created_on')
-            epochTime=$(date -u -d $createdTime +%s)            
-            if [ "${epochTime}" -lt "${cutoffDate}" ]; then
-                deploymentId=$(echo $obj | jq -r '.id')
-                echo "Deployment -> $obj"
+          # All Constants
+          ACCOUNT_ID=${{ secrets.ACCOUNT_ID }}
+          PROJECT_NAME=${{ secrets.PROJECT_NAME }}
+          API_TOKEN=${{ secrets.API_TOKEN }}
+
+          # Set endpoint to get all deployments.
+          ENDPOINT="https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$PROJECT_NAME/deployments"
+
+          # Get all deployments.
+          response=$(curl -s -X GET "$ENDPOINT" -H "Authorization: Bearer $API_TOKEN")
+
+          # Get cutoff date.
+          cutoffDate=$(( $(date +%s) - (10 * 60) ))
+
+          # Loop through deployments and delete if older than 10 days and has a non-empty alias.
+          echo "$response" | jq -c '.result[]' | while read -r obj; do
+
+            # Get deployment time.
+            currentDeploymentTime=$(date -u -d "$(echo "$obj" | jq -r '.created_on')" +%s)
+
+            # Get deployment alias [Will be null if not latest deployment].
+            currentDeploymentAlias=$(echo "$obj" | jq -r '.aliases[0]')
+
+            # Check if deployment is older than 10 days and has a non-empty alias.
+            if [ "$currentDeploymentTime" -lt "$cutoffDate" ] && [ "$currentDeploymentAlias" == "null" ]; then
+              deploymentId=$(echo "$obj" | jq -r '.id')
+              echo "ID: $deploymentId"
+
+              # Uncomment the below line to delete the deployment.
+              # curl -s -X DELETE $ENDPOINT/"$deploymentId" -H "Authorization: Bearer $API_TOKEN"
             fi
           done
