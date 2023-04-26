@@ -48,7 +48,7 @@ jobs:
               # Check if deployment is older than cutoff-days and has an empty alias.
               if [ "$currentDeploymentTime" -lt "$cutoffDate" ] && [ "$currentDeploymentAlias" == "null" ]; then
                 deploymentId=$(echo "$obj" | jq -r '.id')
-                curl -s -X DELETE $ENDPOINT/"$deploymentId" -H "Authorization: Bearer $CF_API_TOKEN"
+                echo "$deploymentId"
               fi
             done
           done
