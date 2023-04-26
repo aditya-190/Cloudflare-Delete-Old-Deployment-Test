@@ -17,35 +17,38 @@ jobs:
       - name: Call Cloudflare Pages API
         run: |
           # All Constants
-          ACCOUNT_ID=${{ secrets.ACCOUNT_ID }}
-          PROJECT_NAME=${{ secrets.PROJECT_NAME }}
-          API_TOKEN=${{ secrets.API_TOKEN }}
-          EXPIRATION_DAYS=${{ secrets.EXPIRATION_DAYS }}
+          CF_ACCOUNT_ID=${{ env.CF_ACCOUNT_ID }}
+          CF_PROJECT_NAME=${{ env.CF_PROJECT_NAME }}
+          CF_API_TOKEN=${{ secrets.CF_API_TOKEN }}
+          CF_EXPIRATION_DAYS=${{ env.CF_EXPIRATION_DAYS }}
 
           # Set endpoint to get all deployments.
-          ENDPOINT="https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/$PROJECT_NAME/deployments"
-
-          # Get all deployments.
-          response=$(curl -s -X GET "$ENDPOINT" -H "Authorization: Bearer $API_TOKEN")
-
-          # Get cutoff date.
-          cutoffDate=$(( $(date +%s) - (EXPIRATION_DAYS * 60) ))
-
-          # Loop through deployments and delete if older than cutoff-days and has a non-empty alias.
-          echo "$response" | jq -c '.result[]' | while read -r obj; do
-
-            # Get deployment time.
-            currentDeploymentTime=$(date -u -d "$(echo "$obj" | jq -r '.created_on')" +%s)
-
-            # Get deployment alias [Will be null if not latest deployment].
-            currentDeploymentAlias=$(echo "$obj" | jq -r '.aliases[0]')
+          ENDPOINT="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/pages/projects/$CF_PROJECT_NAME/deployments"
           
-            # Check if deployment is older than cutoff-days and has an empty alias.
-            if [ "$currentDeploymentTime" -lt "$cutoffDate" ] && [ "$currentDeploymentAlias" == "null" ]; then
-              deploymentId=$(echo "$obj" | jq -r '.id')
-              echo "ID: $deploymentId"
-
-              # Uncomment the below line to delete the deployment.
-              # curl -s -X DELETE $ENDPOINT/"$deploymentId" -H "Authorization: Bearer $API_TOKEN"
-            fi
+          # Get total pages.
+          totalPages=$(($(curl -s -X GET "$ENDPOINT?page=1" -H "Authorization: Bearer $CF_API_TOKEN" | jq -r '.result_info.total_count') / 25))
+          
+          # Paginate through deployments. [25 deployments per page]
+          for ((page = 1; page <= totalPages; page++)); do
+          
+            # Get deployments.
+            response=$(curl -s -X GET "$ENDPOINT?page=$page" -H "Authorization: Bearer $CF_API_TOKEN")
+          
+            # Get cutoff date.
+            cutoffDate=$(($(date +%s) - (CF_EXPIRATION_DAYS * 86400)))
+          
+            # Loop through deployments and delete if older than cutoff-days and has a non-empty alias.
+            echo "$response" | jq -c '.result[]' | while read -r obj; do
+              # Get deployment time.
+              currentDeploymentTime=$(date -u -d "$(echo "$obj" | jq -r '.created_on')" +%s)
+          
+              # Get deployment alias [Will be null if not latest deployment].
+              currentDeploymentAlias=$(echo "$obj" | jq -r '.aliases[0]')
+          
+              # Check if deployment is older than cutoff-days and has an empty alias.
+              if [ "$currentDeploymentTime" -lt "$cutoffDate" ] && [ "$currentDeploymentAlias" == "null" ]; then
+                deploymentId=$(echo "$obj" | jq -r '.id')
+                curl -s -X DELETE $ENDPOINT/"$deploymentId" -H "Authorization: Bearer $CF_API_TOKEN"
+              fi
+            done
           done
